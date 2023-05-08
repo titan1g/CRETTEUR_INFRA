@@ -52,13 +52,28 @@
         </div>
         <div class="sous-titre">
             <h2>PARTIE II :</h2>
-            <h2>Installation des VM</h2>
+            <h2>Installation des VM ET REGLAGE DE PFSENSE</h2>
             <p>
                 Installer 1 VM Linux Debian et 1 VM Windows pour le côté client.<br>
                 Installer 2 VMs Linux Debian, 1 pour l'hébergement du serveur et une pour la sauvegarde du serveur.<br>
                 Installer pfSense, notre pare-feu.
             </p>
-        <div>
+            <p>
+                Le pare-feu est un élément essentiel de l'architecture réseau, offrant divers services tels que le DHCP, le DNS, le filtrage réseau et le routage. Dans ce projet, nous utilisons pfSense comme pare-feu.</p>
+            <p>Voici notre interface une fois configurée. Le WAN nous permet l'accès direct à internet, Le LAN va servir a être notre backup en cas d'incident ou de bug, et la DMZ, va être l'hebergeur de notre site web</p>
+            <img src="DOC INFRA/9.png" alt="">
+            <p>Le service DHCP est activé sur le serveur pfSense. Il attribue automatiquement des adresses IP aux clients et serveurs du réseau interne, facilitant ainsi la gestion et la configuration du réseau.</p>
+            <img src="DOC INFRA/10.png" alt="">
+            <p>Le DNS Resolver est activé sur pfSense, permettant la résolution des noms de domaine locaux et publics. Les clients et serveurs du réseau interne peuvent ainsi accéder aux ressources en utilisant des noms de domaine au lieu d'adresses IP.</p>
+            <img src="DOC INFRA/11.png" alt="">
+            <p>Le filtrage réseau est réalisé à l'aide des règles sur pfSense. Voici les règles mises en place :</p>
+
+                <p>Autoriser tout le trafic du LAN vers la DMZ sans restriction.</p>
+                <p>Autoriser le LAN à accéder aux services DNS.</p>
+                <p>Autoriser le LAN à utiliser le protocole HTTPS pour naviguer sur le web en toute sécurité.</p>
+                <p>Interdire tout le reste du trafic non autorisé (par exemple, les requêtes ping vers www.google.com ne fonctionneront pas).</p>
+            <img src="DOC INFRA/12.png" alt="">
+            <p>Le routage est appliqué par défaut sur pfsense.</p>
             <div class="sous-titre">
             <h2>PARTIE III :</h2>
             <h2>MISE A JOUR ET INSTALLATION D'APACHE</h2>
@@ -111,34 +126,47 @@
             <p>
                On sait qu'avec Pfsense, on a lié les trois réseaux, donc on va pouvoir se connecter à notre serveur web depuis notre client Windows. Pour ce faire, on va récupérer l'adresse ip du serveur web, ici, il s'agit de 192.168.123.10. On va donc taper cette adresse dans la barre de recherche de notre navigateur internet, et nous allons tomber sur notre site web.
             </p>           
-          
-       
-        </div>
-        <div>
-            <div class="sous-titre">
-            <h2>PARTIE V :</h2>
-            <h2>CONFIGURATION DU SITE WEB</h2>
-                <p>
-                    On commence par se mettre en mode root, donc on utilise la commande "su" et on rentre notre mot de passe. Suite à cela, on cherche à sélectionner le répertoire "notresite" et à le déplacer dans "/var/www/monsite", pour cela on utilise la commande "mv /home/utilisateur/notresite /var/www/monsite". Une fois cette commande rentrée, on veut vérifier le contenu du répertoire "notresite", pour cela on utilise la commande "ls /var/www/monsite/notresite" ce qui nous donne un fichier "main.css" et un fichier "notresite.html", donc tous les dossiers concernant le site web sont bien dans le répertoire.                
-                </p>
-            <img src="DOC INFRA/17.png" alt="">
-                <p>
-                    Ici, on utilise Nano issu du paquet Apache2 en rentrant la commande "sudo nano /etc/apache2/sites-available/monsite.conf". On utilise cette commande pour rentrer les configurations du serveur, parmi ces informations se trouve notamment le nom du serveur et où il se trouve, on rentre donc le contenu situé entre "<VirtualHost *:80>" et "</VirtualHost>".            
-                </p>
-            <img src="DOC INFRA/18.png" alt="">
-                <p>
-                    On cherche à activer le site web configuré dans le fichier monsite.conf, situé dans le répertoire /etc/apache2/sites-available/. Pour ce faire, on utilise la commande " sudo a2ensite monsite.conf". 
-                </p>           
-            <img src="DOC INFRA/19.png" alt="">
         </div>
         <div>
             <div class="sous-titre">
             <h2>PARTIE VI :</h2>
-            <h2>DESACTIVATION DU SITE WEB PAR DEFAUT ET REDEMARRAGE D'APACHE2</h2>
+            <h2>BACKUP</h2>
                 <p>
-                    Et enfin, on cherche à désactiver le site web par défaut. Pour ce faire, on utilise la commande "sudo a2dissite 000-default.conf". Ainsi, on utilise la commande "sudo systemctl restart apache2" pour redémarrer le service Apache2, ce qui permet de prendre en compte les modifications apportées aux fichiers de configuration et de résoudre d'éventuels problèmes liés au service.                
+                    La sauvegarde (backup) du site web a été réalisée en utilisant un script shell personnalisé nommé backup.sh. Voici les étapes clés pour comprendre comment la sauvegarde a été effectuée :
+
+                    Création du script de sauvegarde : Le script backup.sh a été créé en utilisant l'éditeur de texte nano. Ce script contient les commandes nécessaires pour créer une sauvegarde compressée du site web et la transférer vers un autre serveur.
                 </p>
-            <img src="DOC INFRA/21.png" alt="">
+            <img src="DOC INFRA/6.png" alt=""> 
+            <p>Grace à ce script, on va directement établir le lien avec les 2 serveurs, l'hebergeur et la sauvegarde, nous allons créer le répertoire de la backup, au cas ou cette backup n'existerais plus.</p>
+            <p>On va ensuite créer un dossier backup dans le dossier /var/www/projetinfra, puis on va créer un fichier backup.sh dans le dossier /var/www/projetinfra/backup, et on va y copier le script backup.sh. On va ensuite utiliser la commande chmod +x backup.sh pour rendre le script exécutable.</p>
+            <p>Naturellement, nous allons planifier une sauvegarde qui opérera tous les jours à 4h du matin. Nous utiliserons l'utilitaire crontab, on va ouvrir le fichier crontab avec la commande : crontab -e
+            <p>Et ajouter la ligne suivante au fichier :</p>
+            <img src="DOC INFRA/7.png" alt="">
+            <p>On peut vérifier coté serveur backup si elle marche ou non, ici on voit qu'elle est opérationnelle</p>
+            <img src="DOC INFRA/8.png" alt="">
+        </div>
+    </div>
+        <div>
+            <div class="sous-titre">
+            <h2>PARTIE VI : La génération du certificat SSL</h2>
+            <h2></h2>
+                <p>
+               Afin de créer le certificat SSL, nous allons installer openssl, puis nous allons créer un répertoire pour stocker les fichiers de certificat SSL en utilisant la commande:</p>
+                <p> sudo mkdir /etc/apache2/ssl  </p>
+                <p> openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt</p>
+                <p>Une fois le certificat SSL et la clé privée généré, nous allons le configurer dans le fichier de configuration Apache. Nous allons donc ouvrir le fichier de configuration Apache :</p>
+                    <p>/etc/apache2/sites-available/projetinfra.conf en ajoutant les directives suivantes à l'intérieur de la balise "VirtualHost" pour activer SSL :</p>
+                    <p>SSLEngine on</p>
+                    <p>SSLCertificateFile /etc/apache2/ssl/apache.crt</p>
+                    <p>SSLCertificateKeyFile /etc/apache2/ssl/apache.key</p>
+                                 
+                <p>Cela activera le moteur SSL et indiquera à Apache d'utiliser le certificat et la clé privée précédemment générés.</p>
+                <p>On active le module SSL d'Apache en utilisant la commande a2enmod :</p>
+                Si tout est correct, on verra le message "Syntax OK". Ensuite, nous allons redémarrer Apache pour appliquer les modifications</p>
+            <img src="DOC INFRA/13.png" alt="">
+            <p>Voici le certificat</p>
+            <img src="DOC INFRA/14.png" alt="">
+            <p>Maintenant, notre serveur Apache est configuré pour utiliser HTTPS avec le certificat SSL auto-signé. Les clients verront un avertissement de sécurité dans leur navigateur lorsqu'ils accéderont à notre site, car le certificat n'est pas émis par une autorité de certification reconnue.</p>
         </div>
     </div>
 </body>
