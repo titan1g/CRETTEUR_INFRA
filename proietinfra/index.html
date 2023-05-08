@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP INFRA CRETTEUR-VINCENT</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div>
+        <h1 class="titre">ARCHITECTURE CLIENT-SERVEUR</h1>
+    </div>
+        <div>
+            <div class="sous-titre">
+            <h2>PARTIE I :</h2>
+            <h2>SCHEMA RESEAU</h2>
+            <img src="DOC INFRA/1.png" alt="">
+            <p>
+                Pare-feu (pfSense) : Le pare-feu sert de point d'entrée et de sortie pour le réseau de l'entreprise. Il est connecté à Internet via l'interface WAN et au réseau interne de l'entreprise via l'interface LAN. Le pare-feu gère les services de DHCP, DNS, filtrage réseau et routage pour le réseau interne. <br>
+                
+                Réseau local (LAN) : Le LAN est le réseau interne de l'entreprise, composé des clients et des serveurs. Les clients (Windows et Linux) et les serveurs (serveur de sauvegarde et serveur d'hébergement de site web) sont connectés au LAN pour communiquer entre eux et accéder aux services et ressources du réseau. <br>
+                
+                Zone démilitarisée (DMZ) : La DMZ est une zone du réseau séparée du LAN et conçue pour héberger des services accessibles depuis l'Internet, tels que le serveur d'hébergement de site web. Le pare-feu contrôle et filtre le trafic entre la DMZ, le LAN et l'Internet. <br>
+                
+                Clients : Les clients Windows et Linux sont utilisés par les employés de l'entreprise pour accéder aux services et ressources du réseau interne, tels que les serveurs de sauvegarde et d'hébergement de site web. <br>
+                
+                Serveur de sauvegarde Linux : Le serveur de sauvegarde est connecté au LAN et est accessible uniquement depuis le réseau interne. Il est utilisé pour effectuer des sauvegardes régulières des données du site web hébergé sur le serveur d'hébergement de site web. <br>
+                
+                Serveur d'hébergement de site web Linux : Le serveur d'hébergement de site web est situé dans la DMZ, ce qui permet un accès depuis l'Internet ou le réseau externe. Il héberge le site web de l'entreprise et est protégé par le pare-feu, qui filtre et contrôle le trafic entre le serveur et les autres zones du réseau. <br>
+            </p>
+            <h2>PLAN ADRESSAGE</h2>
+            <p>WAN (Internet) :<br>
+
+            <p>Adresse IP : 192.168.139.133</p>
+            <p>Masque de sous-réseau : 255.255.255.0 (/24)</p>
+
+            <p>DMZ (Zone démilitarisée) : </p>
+
+            <p>Adresse IP du réseau : 192.168.123.0</p>
+            <p>Masque de sous-réseau : 255.255.255.0 (/24)</p>
+            <p>Passerelle (pare-feu) : 192.168.123.1</p>
+            <p>Serveur web : 192.168.123.10</p>
+            <p>LAN (Réseau local) :</p>
+
+            <p>Adresse IP du réseau : 192.168.124.0</p>
+            <p>Masque de sous-réseau : 255.255.255.0 (/24)</p>
+            <p>Passerelle (pare-feu) : 192.168.124.1</p>
+            <p>Client : Adresse IP attribuée automatiquement par le serveur DHCP (dans la plage d'adresses IP définie pour le LAN)</p>
+            <p>Serveur de sauvegarde (réplica) : 192.168.124.12</p>
+
+        </div>
+        <div class="sous-titre">
+            <h2>PARTIE II :</h2>
+            <h2>Installation des VM</h2>
+            <p>
+                Installer 1 VM Linux Debian et 1 VM Windows pour le côté client.<br>
+                Installer 2 VMs Linux Debian, 1 pour l'hébergement du serveur et une pour la sauvegarde du serveur.<br>
+                Installer pfSense, notre pare-feu.
+            </p>
+        <div>
+            <div class="sous-titre">
+            <h2>PARTIE III :</h2>
+            <h2>MISE A JOUR ET INSTALLATION D'APACHE</h2>
+                <p>
+                    Une fois étant passé en mode root, on utilise la commande "sudo apt update" pour mettre à jour la liste des paquets disponibles.
+                </p>
+                <p>
+                    Dès que la mise à jour des paquets est installée, nous allons pouvoir installer apache2, pour ce faire, on utilise la commande "sudo apt install apache2". Apache2 est un serveur HTTP, il permet de mettre en place un serveur web, il sera plus qu'important pour notre projet.
+                </p>
+                <p>Configuration d'Apache : Modifier les fichiers de configuration d'Apache pour sécuriser et personnaliser le serveur Web.</p>
+            <img src="DOC INFRA/2.png" alt="">
+            <img src="DOC INFRA/3.png" alt="">
+            <img src="DOC INFRA/4.png" alt="">
+            <img src="DOC INFRA/5.png" alt="">
+                <p> Création du répertoire du site Web et activation du site : Ici, on va créer un répertoire pour le site Web et activer la configuration du site dans Apache. en utilisant les commandes : 
+                    sudo mkdir /var/www/projetinfra
+                    ; sudo nano /etc/apache2/sites-available/projetinfra.conf -> on va éditer le texte dans le dossier projetinfra.conf
+                    ; cd /etc/apache2/sites-enabled
+                    ; ln -s ../sites-available/projetinfra.conf .
+                    ; systemctl restart apache2
+                                   </p>
+                <p>Une fois le restart fais, apache devient opérationnel pour notre projet</p>  
+        </div>
+        <div>
+            <div class="sous-titre">
+            <h2>PARTIE IV :</h2>
+            <h2>INSTALLATION ET CONFIGURATION DE SSH</h2>
+                <p> L'installation et la configuration de SSH (Secure Shell) permettent d'établir des connexions sécurisées à distance entre les machines et d'accéder au serveur via la ligne de commande. OpenSSH est un ensemble d'outils qui implémente le protocole SSH.</p>  
+
+                <p> Nous allon utiliser la commande apt install openssh-server : Cette commande installe le serveur OpenSSH sur la machine. Une fois le serveur OpenSSH installé, il est démarré automatiquement et écoutera les connexions entrantes sur le port 22 par défaut.
+
+                <p> ssh-keygen : Cette commande va nous permettre de génèrer une paire de clés cryptographiques pour l'authentification par clé publique, qui est une méthode plus sécurisée que l'authentification par mot de passe. Lors de l'exécution de cette commande, un dossier .ssh est créé, et deux fichiers y sont générés : id_rsa (clé privée) et id_rsa.pub (clé publique). La clé privée doit être gardée secrète et sécurisée, tandis que la clé publique peut être partagée avec les systèmes auxquels on va se connecter : Le LAN et le DMZ.</p>
+
+                <p>Après avoir généré la paire de clés, on va utiliser la commande ssh-copy-id pour copier la clé publique sur le serveur distant. Nous n'aurons donc plus à utiliser le mot de passe.</p>
+                </p>            
+        </div>
+        <div>
+            <div class="sous-titre">
+            <h2>PARTIE V :</h2>
+            <h2>TRANSFERT DU SITE WEB</h2>
+            <p>
+              Pour transférer notre site web et la rattacher sur apache, nous allons "copier notre repo git", mais nous devrons avant cela utiliser la commande apt install git, puis nous n'avons que tout simplement qu'à utiliser la commande git clone https://github.com/titan1g/CRETTEUR_VINCENT_INFRA.git projetinfra. Ce qui va nous permettre de cloner le site web sur notre serveur.
+            </p>
+            <p>
+                Une fois le site web cloné, nous allons devoir le déplacer dans le dossier /var/www/projetinfra, pour ce faire, nous allons utiliser la commande mv projetinfra /var/www/projetinfra. Puis effectuer ces commandes 
+                <p>cp -rf projetinfra /var/www/</p>
+                <p>chown -R www-data: /var/www/projetinfra/</p>
+            </p>
+
+            <p>
+               On sait qu'avec Pfsense, on a lié les trois réseaux, donc on va pouvoir se connecter à notre serveur web depuis notre client Windows. Pour ce faire, on va récupérer l'adresse ip du serveur web, ici, il s'agit de 192.168.123.10. On va donc taper cette adresse dans la barre de recherche de notre navigateur internet, et nous allons tomber sur notre site web.
+            </p>           
+          
+       
+        </div>
+        <div>
+            <div class="sous-titre">
+            <h2>PARTIE V :</h2>
+            <h2>CONFIGURATION DU SITE WEB</h2>
+                <p>
+                    On commence par se mettre en mode root, donc on utilise la commande "su" et on rentre notre mot de passe. Suite à cela, on cherche à sélectionner le répertoire "notresite" et à le déplacer dans "/var/www/monsite", pour cela on utilise la commande "mv /home/utilisateur/notresite /var/www/monsite". Une fois cette commande rentrée, on veut vérifier le contenu du répertoire "notresite", pour cela on utilise la commande "ls /var/www/monsite/notresite" ce qui nous donne un fichier "main.css" et un fichier "notresite.html", donc tous les dossiers concernant le site web sont bien dans le répertoire.                
+                </p>
+            <img src="DOC INFRA/17.png" alt="">
+                <p>
+                    Ici, on utilise Nano issu du paquet Apache2 en rentrant la commande "sudo nano /etc/apache2/sites-available/monsite.conf". On utilise cette commande pour rentrer les configurations du serveur, parmi ces informations se trouve notamment le nom du serveur et où il se trouve, on rentre donc le contenu situé entre "<VirtualHost *:80>" et "</VirtualHost>".            
+                </p>
+            <img src="DOC INFRA/18.png" alt="">
+                <p>
+                    On cherche à activer le site web configuré dans le fichier monsite.conf, situé dans le répertoire /etc/apache2/sites-available/. Pour ce faire, on utilise la commande " sudo a2ensite monsite.conf". 
+                </p>           
+            <img src="DOC INFRA/19.png" alt="">
+        </div>
+        <div>
+            <div class="sous-titre">
+            <h2>PARTIE VI :</h2>
+            <h2>DESACTIVATION DU SITE WEB PAR DEFAUT ET REDEMARRAGE D'APACHE2</h2>
+                <p>
+                    Et enfin, on cherche à désactiver le site web par défaut. Pour ce faire, on utilise la commande "sudo a2dissite 000-default.conf". Ainsi, on utilise la commande "sudo systemctl restart apache2" pour redémarrer le service Apache2, ce qui permet de prendre en compte les modifications apportées aux fichiers de configuration et de résoudre d'éventuels problèmes liés au service.                
+                </p>
+            <img src="DOC INFRA/21.png" alt="">
+        </div>
+    </div>
+</body>
+</html>
